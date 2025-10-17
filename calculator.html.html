@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>퀵서비스 계산기</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100vh; background: #f8f9fa; margin: 0;
+    }
+    .calc-box {
+      background: #fff; padding: 20px 30px; border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; width: 340px;
+    }
+    h2 { color:#333; margin: 0 0 16px; }
+    input {
+      width: 100%; padding: 10px; font-size: 1.1rem; text-align: right;
+      border: 1px solid #ccc; border-radius: 8px; outline: none;
+    }
+    .result { margin-top: 16px; font-size: 1.05rem; color: #222; text-align: left; }
+    .result p { margin: 8px 0; }
+    .highlight { color: #0066cc; font-weight: 700; }
+    .final {
+      margin-top: 18px;
+      padding-top: 10px;
+      border-top: 1px dashed #aaa;
+      font-size: 1.2rem;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="calc-box">
+    <h2>퀵서비스 계산기</h2>
+    <input type="number" id="inputValue" placeholder="금액을 입력하세요" step="0.01" />
+    <div class="result">
+      <p>① 부가세(10%): <span class="highlight" id="result1">0</span> 원</p>
+      <p>② 추가 부가세(10%): <span class="highlight" id="result2">0</span> 원</p>
+      <div class="final">
+        💰 최종결과값: <span class="highlight" id="finalResult">0</span> 원
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const inputEl = document.getElementById('inputValue');
+    const r1El = document.getElementById('result1');
+    const r2El = document.getElementById('result2');
+    const finalEl = document.getElementById('finalResult');
+
+    function toNumber(v) {
+      if (typeof v !== 'string') v = String(v ?? '');
+      v = v.replace(/,/g, '').trim();
+      const n = parseFloat(v);
+      return isNaN(n) ? 0 : n;
+    }
+
+    // 💡 10원 단위 생략 & 100원 단위 500원 올림
+    function roundUpTo500(n) {
+      let rounded = Math.round(n / 10) * 10; // 10원 단위 반올림
+      const hundreds = Math.floor(rounded / 100) * 100;
+      const remainder = rounded - hundreds;
+
+      if (remainder > 0 && remainder <= 500) {
+        return hundreds + 500;
+      } else if (remainder > 500) {
+        return hundreds + 1000;
+      } else {
+        return hundreds;
+      }
+    }
+
+    function format(n) {
+      return n.toLocaleString();
+    }
+
+    function calculate() {
+      const base = toNumber(inputEl.value);
+      if (!base) {
+        r1El.textContent = 0;
+        r2El.textContent = 0;
+        finalEl.textContent = 0;
+        return;
+      }
+
+      // 원금 기반 계산
+      const vat = base * 1.10;
+      const addVat = vat * 1.10;
+
+      // 최종결과값 (올림 규칙 적용)
+      const final = roundUpTo500(addVat);
+
+      r1El.textContent = format(vat);
+      r2El.textContent = format(addVat);
+      finalEl.textContent = format(final);
+    }
+
+    inputEl.addEventListener('input', calculate);
+    calculate();
+  </script>
+</body>
+</html>
